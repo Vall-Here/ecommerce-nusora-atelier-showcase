@@ -427,6 +427,149 @@
       line-height: 1.6;
     }
 
+    /* Gallery & Lightbox */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.45rem 0.9rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .filter-btn:hover { color: var(--text-main); border-color: var(--border-hover); }
+    .filter-btn.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .gallery-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s;
+    }
+
+    .gallery-item:hover { border-color: var(--border-hover); }
+
+    .gallery-thumb {
+      aspect-ratio: 16 / 10;
+      background: #0b0d12;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gallery-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .gallery-placeholder {
+      padding: 1.25rem;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .gallery-meta {
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .gallery-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: #2dd4bf;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .gallery-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .gallery-desc {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(0, 0, 0, 0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .lightbox.active { display: flex; }
+
+    .lightbox-inner {
+      max-width: 1100px;
+      width: 100%;
+      background: #0e1015;
+      border: 1px solid var(--border-color);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .lightbox-inner img {
+      max-height: 78vh;
+      width: 100%;
+      object-fit: contain;
+      background: #050608;
+    }
+
+    .lightbox-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
     footer {
       border-top: 1px solid var(--border-color);
       padding: 2.2rem 0;
@@ -452,14 +595,15 @@
         <ul>
           <li><a href="#architecture">Arsitektur</a></li>
           <li><a href="#invariants">Invarian</a></li>
-          <li><a href="#modules">11 Modul Domain</a></li>
+          <li><a href="#modules">11 Modul</a></li>
           <li><a href="#sdd-erd">SDD &amp; ERD</a></li>
-          <li><a href="#deployment">Deployment</a></li>
+          <li><a href="#testing">Pengujian</a></li>
+          <li><a href="#screens">Galeri UI</a></li>
         </ul>
       </nav>
       <div class="nav-actions">
         <a href="./sdd/README.md" class="btn btn-outline">SDD Markdown</a>
-        <a href="../DEPLOYMENT_SHARED_HOSTING.md" class="btn btn-primary">Panduan Hosting</a>
+        <a href="./architecture/nusora-architecture.html" class="btn btn-primary">Diagram Archify</a>
       </div>
     </div>
   </header>
@@ -675,37 +819,212 @@ graph TB
       </div>
     </section>
 
-    <section id="deployment">
+    <section id="testing">
       <div class="section-head">
-        <div class="section-tag">05 // QUICK START &amp; SHARED HOSTING SHOWCASE</div>
-        <h2>Instalasi Lokal &amp; Mode Showcase</h2>
-        <p>Siap dijalankan di Docker/PostgreSQL lokal maupun Shared Hosting (cPanel/Plesk) menggunakan driver database/sync.</p>
+        <div class="section-tag">05 // PENGUJIAN &amp; VERIFIKASI</div>
+        <h2>Suite Pengujian Pest PHP &amp; Kualitas Kode</h2>
+        <p>Pengujian otomatis mencakup konkurensi reservasi stok, idempotensi webhook pembayaran, state machine pesanan, RMA, dan guard read-only.</p>
       </div>
-      <div class="grid-2">
+
+      <div class="filter-bar" id="testFilterBar">
+        <button type="button" class="filter-btn active" onclick="filterTests('all', this)">Semua Suite</button>
+        <button type="button" class="filter-btn" onclick="filterTests('storefront', this)">Storefront &amp; Checkout</button>
+        <button type="button" class="filter-btn" onclick="filterTests('inventory', this)">Inventory &amp; Concurrency</button>
+        <button type="button" class="filter-btn" onclick="filterTests('payment', this)">Payments &amp; Webhooks</button>
+        <button type="button" class="filter-btn" onclick="filterTests('admin', this)">Admin, Security &amp; Shipping</button>
+      </div>
+
+      <div class="grid-3" id="testSuitesGrid">
+        <div class="card test-card" data-tcat="inventory">
+          <div class="card-code">CONCURRENCY // PEST</div>
+          <h3>ConcurrencyReservationTest.php</h3>
+          <p>Simulasi rebutan stok bersamaan dengan <code>lockForUpdate()</code>, batas stok tersedia, dan pelepasan reservasi kedaluwarsa.</p>
+        </div>
+        <div class="card test-card" data-tcat="inventory">
+          <div class="card-code">INVENTORY // PEST</div>
+          <h3>InventoryReservationTest.php</h3>
+          <p>Reservasi TTL 15 menit, konversi ke penjualan saat konfirmasi pembayaran, dan pencatatan <code>InventoryLog</code>.</p>
+        </div>
+        <div class="card test-card" data-tcat="payment">
+          <div class="card-code">WEBHOOK // PEST</div>
+          <h3>XenditPaymentWebhookTest.php</h3>
+          <p>Pembuatan invoice Xendit, verifikasi <code>x-callback-token</code>, transisi PAID/EXPIRED, dan perlindungan idempotensi.</p>
+        </div>
+        <div class="card test-card" data-tcat="payment">
+          <div class="card-code">WEBHOOK // PEST</div>
+          <h3>PaymentWebhookTest.php &amp; MidtransPaymentWebhookTest.php</h3>
+          <p>Validasi signature HMAC SHA256 (Stripe) &amp; SHA512 (Midtrans), penolakan signature invalid, dan penanganan duplicate webhook.</p>
+        </div>
+        <div class="card test-card" data-tcat="storefront">
+          <div class="card-code">STOREFRONT // PEST</div>
+          <h3>StorefrontLivewireTest.php</h3>
+          <p>Pengujian halaman Beranda, Katalog, PDP Console (varian warna &amp; ukuran), Cart Drawer, dan Checkout dengan kupon.</p>
+        </div>
+        <div class="card test-card" data-tcat="storefront">
+          <div class="card-code">PORTAL &amp; INVOICE // PEST</div>
+          <h3>CustomerPortalExtendedTest.php</h3>
+          <p>Buku alamat, profil ukuran, checkout 1-klik, ulasan fit terverifikasi, serta otorisasi dan render faktur A4.</p>
+        </div>
+        <div class="card test-card" data-tcat="admin">
+          <div class="card-code">ADMIN OMS // PEST</div>
+          <h3>AdminBackofficeTest.php</h3>
+          <p>RBAC admin, manajemen produk &amp; varian, transisi order, stok opname, ekspor ledger CSV, dan resolusi rekonsiliasi pembayaran.</p>
+        </div>
+        <div class="card test-card" data-tcat="admin">
+          <div class="card-code">SECURITY &amp; DEMO // PEST</div>
+          <h3>DeploymentAndDemoModeTest.php &amp; SecurityDeepAuditVerificationTest.php</h3>
+          <p>Guard 3 lapis <code>demo_admin</code> read-only, toggle penutupan registrasi, penghentian checkout di Mode Demo, serta sanitasi CSV.</p>
+        </div>
+        <div class="card test-card" data-tcat="admin">
+          <div class="card-code">FULFILLMENT &amp; RMA // PEST</div>
+          <h3>FulfillmentAndShippingTest.php &amp; RmaLifecycleTest.php</h3>
+          <p>Fulfillment Desk, cetak label thermal A6 &amp; packing slip A4, checkpoint kurir, garansi 7 hari, dan proteksi tukar ukuran.</p>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top: 1.25rem;">
         <div class="card">
-          <div class="card-code">LOCAL DEVELOPMENT</div>
-          <h3>Setup Cepat</h3>
-          <pre class="code-block" style="margin-top: 0.75rem;">composer install
-npm ci &amp;&amp; npm run build
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan db:seed --class=ProductSeeder
-php artisan storage:link</pre>
+          <div class="card-code">STATIC ANALYSIS</div>
+          <h3>Larastan / PHPStan Level 8</h3>
+          <p>Konfigurasi analisis statis ketat pada <code>phpstan.neon</code> untuk memastikan type-safety di seluruh domain dan aksi.</p>
         </div>
         <div class="card">
-          <div class="card-code">SHOWCASE &amp; DEMO CREDENTIALS</div>
-          <h3>Akses Showcase &amp; Kontrol Admin</h3>
-          <ul>
-            <li><strong>Admin Read-Only Showcase</strong>: <code>demo@nusora.test</code> / <code>password</code> (role <code>demo_admin</code>).</li>
-            <li><strong>Mode Demo Checkout</strong>: Aktifkan di <em>Pengaturan Usaha</em> agar banner showcase tampil dan checkout berhenti sebelum pembuatan pesanan.</li>
-            <li><strong>Tutup Pendaftaran Publik</strong>: Gunakan tombol <em>Nonaktifkan Pendaftaran User</em> di <em>Pengaturan Usaha</em>.</li>
-            <li><strong>Panduan Lengkap</strong>: Lihat <a href="../DEPLOYMENT_SHARED_HOSTING.md" style="color: #2dd4bf;">DEPLOYMENT_SHARED_HOSTING.md</a>.</li>
-          </ul>
+          <div class="card-code">CODE STYLE</div>
+          <h3>Laravel Pint</h3>
+          <p>Standar pemformatan PSR-12 dan Laravel preset otomatis untuk seluruh berkas PHP.</p>
+        </div>
+        <div class="card">
+          <div class="card-code">UNIT &amp; MONEY</div>
+          <h3>MoneyTest.php &amp; CoreCommerceEnginesTest.php</h3>
+          <p>Verifikasi aritmetika integer cents pada <code>Money</code>, kalkulator ongkir, PPN 11%, dan rule evaluator kupon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="screens">
+      <div class="section-head">
+        <div class="section-tag">06 // GALERI ANTARMUKA</div>
+        <h2>Pratinjau Layar Storefront &amp; Admin Cockpit</h2>
+        <p>Klik kartu untuk memperbesar gambar. Letakkan berkas tangkapan layar PNG di <code>docs/assets/images/</code> sesuai nama berkas pada masing-masing kartu.</p>
+      </div>
+
+      <div class="filter-bar" id="galleryFilterBar">
+        <button type="button" class="filter-btn active" onclick="filterGallery('all', this)">Semua</button>
+        <button type="button" class="filter-btn" onclick="filterGallery('storefront', this)">Storefront</button>
+        <button type="button" class="filter-btn" onclick="filterGallery('checkout', this)">Checkout &amp; Faktur</button>
+        <button type="button" class="filter-btn" onclick="filterGallery('admin', this)">Admin Cockpit</button>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid">
+        <div class="gallery-item" data-cat="storefront" onclick="openLightbox('assets/images/storefront-home.png', 'Beranda Storefront — Hero dan katalog produk unggulan')">
+          <div class="gallery-thumb">
+            <img src="assets/images/storefront-home.png" alt="Beranda Storefront" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/storefront-home.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">STOREFRONT</span>
+            <div class="gallery-title">Beranda Publik</div>
+            <div class="gallery-desc">Halaman utama dengan dual-theme Dark/Light, navigasi instan, dan ringkasan produk unggulan.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-cat="storefront" onclick="openLightbox('assets/images/storefront-catalog.png', 'Katalog Produk — Filter kategori, ukuran, warna, dan gramasi GSM')">
+          <div class="gallery-thumb">
+            <img src="assets/images/storefront-catalog.png" alt="Katalog Produk" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/storefront-catalog.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">STOREFRONT</span>
+            <div class="gallery-title">Katalog &amp; Filter Multi-Dimensi</div>
+            <div class="gallery-desc">Grid katalog dengan filter kategori, ukuran, warna, GSM, pencarian, dan tombol tambah ke tas.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-cat="storefront" onclick="openLightbox('assets/images/storefront-pdp.png', 'Product Detail Console — Galeri varian warna dan spesifikasi bahan')">
+          <div class="gallery-thumb">
+            <img src="assets/images/storefront-pdp.png" alt="Halaman Detail Produk" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/storefront-pdp.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">STOREFRONT</span>
+            <div class="gallery-title">Halaman Detail Produk (PDP)</div>
+            <div class="gallery-desc">Selektor warna yang menyinkronkan foto varian, selektor ukuran, spesifikasi kain, dan ulasan fit.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-cat="checkout" onclick="openLightbox('assets/images/checkout-wizard.png', 'Checkout 3-Kolom — Alamat, kurir JNE/J&T, kupon, dan PPN 11%')">
+          <div class="gallery-thumb">
+            <img src="assets/images/checkout-wizard.png" alt="Halaman Checkout" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/checkout-wizard.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">CHECKOUT</span>
+            <div class="gallery-title">Checkout Terintegrasi</div>
+            <div class="gallery-desc">Pemilihan alamat, kalkulasi ongkir JNE/J&amp;T, validasi kupon, dan rincian PPN 11%.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-cat="checkout" onclick="openLightbox('assets/images/invoice-a4.png', 'Faktur Penjualan A4 — Format cetak resmi dan PDF')">
+          <div class="gallery-thumb">
+            <img src="assets/images/invoice-a4.png" alt="Faktur Penjualan A4" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/invoice-a4.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">DOKUMEN // A4</span>
+            <div class="gallery-title">Faktur Penjualan A4</div>
+            <div class="gallery-desc">Faktur elektronik resmi siap cetak dengan stempel status pembayaran, rincian PPN, dan hash integritas.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-cat="admin" onclick="openLightbox('assets/images/admin-dashboard.png', 'Admin Cockpit — Ringkasan penjualan harian dan metrik operasional')">
+          <div class="gallery-thumb">
+            <img src="assets/images/admin-dashboard.png" alt="Admin Dashboard" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/admin-dashboard.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">ADMIN COCKPIT</span>
+            <div class="gallery-title">Dashboard Operasional</div>
+            <div class="gallery-desc">Antarmuka native Livewire 4 untuk memantau GMV, pesanan aktif, reservasi stok, dan status sistem.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-cat="admin" onclick="openLightbox('assets/images/admin-opname.png', 'Kontrol Stok & Opname — Reservasi aktif, stok menipis, dan ledger mutasi')">
+          <div class="gallery-thumb">
+            <img src="assets/images/admin-opname.png" alt="Stok Opname dan Ledger" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/admin-opname.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">ADMIN // INVENTARIS</span>
+            <div class="gallery-title">Stok Opname &amp; Riwayat Mutasi</div>
+            <div class="gallery-desc">Pantau reservasi TTL 15 menit, sesuaikan stok fisik varian, dan ekspor buku mutasi ke CSV Excel.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-cat="admin" onclick="openLightbox('assets/images/admin-orders.png', 'Manajemen Pesanan & Rekonsiliasi Pembayaran')">
+          <div class="gallery-thumb">
+            <img src="assets/images/admin-orders.png" alt="Manajemen Pesanan dan Rekonsiliasi" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <div class="gallery-placeholder" style="display: none;">Simpan tangkapan layar ke:<br /><code>docs/assets/images/admin-orders.png</code></div>
+          </div>
+          <div class="gallery-meta">
+            <span class="gallery-tag">ADMIN // OMS</span>
+            <div class="gallery-title">Pesanan &amp; Antrean Rekonsiliasi</div>
+            <div class="gallery-desc">Filter status pesanan, antrean overpayment/refund manual, serta pencatatan resolusi di AuditLog.</div>
+          </div>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-inner" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="" />
+      <div class="lightbox-bar">
+        <span id="lightbox-caption"></span>
+        <button type="button" class="btn btn-outline" onclick="closeLightbox()" style="padding: 0.35rem 0.75rem;">Tutup (Esc)</button>
+      </div>
+    </div>
+  </div>
 
   <footer>
     <div class="container">
@@ -804,6 +1123,44 @@ php artisan storage:link</pre>
         viewport.innerHTML = `<pre class="sdd-source-view"><code>${escapeHtml(diagramCode)}</code></pre>`;
       }
     }
+
+    window.filterTests = function(cat, btn) {
+      document.querySelectorAll('#testFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.querySelectorAll('.test-card').forEach(card => {
+        card.style.display = (cat === 'all' || card.getAttribute('data-tcat') === cat) ? 'block' : 'none';
+      });
+    };
+
+    window.filterGallery = function(cat, btn) {
+      document.querySelectorAll('#galleryFilterBar .filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.querySelectorAll('#galleryGrid .gallery-item').forEach(item => {
+        item.style.display = (cat === 'all' || item.getAttribute('data-cat') === cat) ? 'flex' : 'none';
+      });
+    };
+
+    window.openLightbox = function(src, caption) {
+      const box = document.getElementById('lightbox');
+      const img = document.getElementById('lightbox-img');
+      const cap = document.getElementById('lightbox-caption');
+      img.src = src;
+      cap.textContent = caption || '';
+      box.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeLightbox = function() {
+      const box = document.getElementById('lightbox');
+      box.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    };
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        window.closeLightbox();
+      }
+    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initSddViewer);
