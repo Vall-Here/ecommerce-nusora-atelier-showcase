@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "NusoraCommerce — Frontend & Admin UI Architecture",
+    "output": "frontend-architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1260, 520]
+  },
+  "components": [
+    { "id": "visitor", "type": "external", "label": "Shopper & Admin", "sublabel": "Desktop & Mobile Browser", "pos": [40, 225], "size": [145, 60] },
+    { "id": "vite_tw", "type": "frontend", "label": "Vite 7 + Tailwind v4", "sublabel": "4-Color Dual-Theme Tokens", "pos": [245, 85], "size": [155, 60], "tag": "app.css" },
+    { "id": "storefront", "type": "frontend", "label": "Storefront Shell", "sublabel": "Home, Catalog, PDP & Cart", "pos": [245, 225], "size": [155, 60], "tag": "wire:navigate" },
+    { "id": "admin_ui", "type": "frontend", "label": "Admin Cockpit", "sublabel": "17 Native Livewire Views", "pos": [245, 365], "size": [155, 60], "tag": "No Filament" },
+    { "id": "alpine", "type": "frontend", "label": "Alpine.js 3", "sublabel": "Drawers, Modals & Theme", "pos": [485, 85], "size": [155, 60] },
+    { "id": "checkout_ui", "type": "frontend", "label": "Checkout & Portal", "sublabel": "3-Column Wizard, RMA & Auth", "pos": [485, 225], "size": [155, 60] },
+    { "id": "ops_ui", "type": "frontend", "label": "OMS, Opname & Reports", "sublabel": "Reconciliation & Telemetry", "pos": [485, 365], "size": [155, 60] },
+    { "id": "print_csv", "type": "backend", "label": "Print & CsvExport", "sublabel": "A4 Invoice, A6 & UTF-8 BOM", "pos": [740, 365], "size": [160, 60] },
+    { "id": "lw_wire", "type": "security", "label": "Livewire 4 Runtime", "sublabel": "POST /livewire/update + Guard", "pos": [740, 225], "size": [160, 60], "tag": "Demo Guard" },
+    { "id": "backend_act", "type": "backend", "label": "Domain Actions", "sublabel": "app/Domain/**/Actions", "pos": [985, 225], "size": [150, 60] }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Blade + Livewire 4 Presentation Layer",
+      "wraps": ["vite_tw", "storefront", "admin_ui", "alpine", "checkout_ui", "ops_ui"]
+    }
+  ],
+  "connections": [
+    { "id": "f1", "from": "visitor", "to": "storefront", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "f2", "from": "visitor", "to": "admin_ui", "label": "/admin", "fromSide": "bottom", "toSide": "left" },
+    { "id": "f3", "from": "vite_tw", "to": "storefront", "label": "@theme CSS", "fromSide": "bottom", "toSide": "top", "labelAt": [322, 165] },
+    { "id": "f4", "from": "alpine", "to": "storefront", "label": "Micro-UX", "variant": "dashed", "fromSide": "bottom", "toSide": "top" },
+    { "id": "f5", "from": "storefront", "to": "checkout_ui", "label": "Cart -> Pay" },
+    { "id": "f6", "from": "admin_ui", "to": "ops_ui", "label": "RBAC Guard" },
+    { "id": "f7", "from": "checkout_ui", "to": "lw_wire", "label": "State Sync", "fromSide": "right", "toSide": "left" },
+    { "id": "f8", "from": "ops_ui", "to": "lw_wire", "label": "Call Hook", "variant": "security", "fromSide": "top", "toSide": "bottom" },
+    { "id": "f9", "from": "ops_ui", "to": "print_csv", "label": "Ctrl+P / CSV", "variant": "dashed", "fromSide": "right", "toSide": "left" },
+    { "id": "f10", "from": "lw_wire", "to": "backend_act", "label": "Delegate", "fromSide": "right", "toSide": "left" }
+  ]
+}

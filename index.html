@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NusoraCommerce Showcase | Laravel 12 &amp; Livewire 4 Universal E-Commerce Monolith</title>
+  <meta name="description" content="Technical showcase and architectural overview of NusoraCommerce — a Single-Instance Universal Modular Monolith built with Laravel 12, Livewire 4, Tailwind CSS v4, and PostgreSQL 16+." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #09090b;
+      --bg-secondary: #111216;
+      --bg-card: rgba(20, 22, 28, 0.85);
+      --border-color: rgba(13, 148, 136, 0.24);
+      --border-hover: rgba(13, 148, 136, 0.65);
+      --text-main: #f6f1e7;
+      --text-muted: #b6b2aa;
+      --text-dim: #7b7872;
+      --accent-primary: #0d9488;
+      --accent-secondary: #ea580c;
+      --accent-success: #10b981;
+      --accent-warning: #f59e0b;
+      --card-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(13, 148, 136, 0.14) 0%, transparent 50%),
+        radial-gradient(circle at 95% 35%, rgba(234, 88, 12, 0.08) 0%, transparent 40%),
+        var(--bg-primary);
+      background-attachment: fixed;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(9, 9, 11, 0.88);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      background: rgba(13, 148, 136, 0.15);
+      color: #2dd4bf;
+      border: 1px solid rgba(13, 148, 136, 0.35);
+      padding: 0.2rem 0.5rem;
+      font-weight: 600;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 1.35rem;
+      align-items: center;
+    }
+
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--text-main); }
+
+    .nav-actions { display: flex; gap: 0.65rem; align-items: center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.55rem 1.1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover { background: #0f766e; }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-color);
+      color: var(--text-main);
+    }
+    .btn-outline:hover { border-color: var(--border-hover); background: rgba(13, 148, 136, 0.08); }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .hero {
+      padding: 4.5rem 0 3rem;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      background: rgba(13, 148, 136, 0.1);
+      border: 1px solid var(--border-color);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #2dd4bf;
+      margin-bottom: 1.4rem;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background-color: var(--accent-success);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.1rem, 4.5vw, 3.6rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+      color: var(--text-main);
+    }
+
+    .hero h1 span {
+      color: #2dd4bf;
+    }
+
+    .hero p {
+      max-width: 820px;
+      margin: 0 auto 2.25rem;
+      font-size: 1.08rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.9rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 1.15rem;
+      text-align: left;
+    }
+
+    .stat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .stat-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    section {
+      padding: 3.5rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .section-head {
+      margin-bottom: 2rem;
+    }
+
+    .section-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #2dd4bf;
+      margin-bottom: 0.4rem;
+    }
+
+    .section-head h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.45rem;
+    }
+
+    .section-head p {
+      color: var(--text-muted);
+      max-width: 720px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1.1rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 1.35rem;
+      transition: border-color 0.2s;
+    }
+
+    .card:hover { border-color: var(--border-hover); }
+
+    .card-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #2dd4bf;
+      margin-bottom: 0.4rem;
+      font-weight: 700;
+    }
+
+    .card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .card p, .card li {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .card ul {
+      padding-left: 1.1rem;
+      margin-top: 0.5rem;
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    .arch-box {
+      background: #0c0e13;
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    /* Interactive SDD Viewer */
+    .sdd-shell {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .sdd-module-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .sdd-module-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.42rem 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .sdd-module-pill:hover { color: var(--text-main); border-color: var(--border-hover); }
+    .sdd-module-pill.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .sdd-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sdd-tab-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .sdd-tab-btn {
+      padding: 0.4rem 0.8rem;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .sdd-tab-btn.active {
+      background: rgba(13, 148, 136, 0.18);
+      border-color: var(--accent-primary);
+      color: #2dd4bf;
+      font-weight: 700;
+    }
+
+    .sdd-diagram-viewport {
+      padding: 1.5rem;
+      min-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: auto;
+      background: #080a0f;
+    }
+
+    .sdd-source-view {
+      width: 100%;
+      padding: 1rem;
+      background: #050608;
+      border: 1px solid var(--border-color);
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .code-block {
+      background: #050608;
+      border: 1px solid var(--border-color);
+      padding: 1.1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 2.2rem 0;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 900px) {
+      nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <a href="#overview" class="brand">
+        <span>NUSORACOMMERCE</span>
+        <span class="brand-badge">LARAVEL 12 + LIVEWIRE 4</span>
+      </a>
+      <nav aria-label="Navigasi Dokumentasi">
+        <ul>
+          <li><a href="#architecture">Arsitektur</a></li>
+          <li><a href="#invariants">Invarian</a></li>
+          <li><a href="#modules">11 Modul Domain</a></li>
+          <li><a href="#sdd-erd">SDD &amp; ERD</a></li>
+          <li><a href="#deployment">Deployment</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a href="./sdd/README.md" class="btn btn-outline">SDD Markdown</a>
+        <a href="../DEPLOYMENT_SHARED_HOSTING.md" class="btn btn-primary">Panduan Hosting</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="overview" class="container">
+    <section class="hero" style="border-top: none;">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>SINGLE-INSTANCE MODULAR MONOLITH</span>
+      </div>
+      <h1>Arsitektur E-Commerce<br /><span>Laravel 12, Livewire 4 &amp; PostgreSQL 16</span></h1>
+      <p>
+        NusoraCommerce adalah platform e-commerce untuk satu instansi bisnis per deployment. Sistem ini memisahkan
+        12 modul domain di <code>app/Domain/</code>, mencatat penyesuaian harga secara polimorfik, dan menggunakan
+        Admin Cockpit native Livewire 4 tanpa Filament.
+      </p>
+      <div class="hero-actions">
+        <a href="./architecture/nusora-architecture.html" class="btn btn-primary">Diagram Arsitektur</a>
+        <a href="./backend/backend-architecture.html" class="btn btn-outline">Arsitektur Backend</a>
+        <a href="./frontend/frontend-architecture.html" class="btn btn-outline">Arsitektur Frontend</a>
+        <a href="#sdd-erd" class="btn btn-outline">SDD &amp; ERD Per Modul</a>
+        <a href="https://ecomm.novastack.my.id" class="btn btn-primary" target="_blank">Demo</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-label">Domain Modules</div>
+          <div class="stat-value">12 Modules</div>
+          <div class="stat-sub">Terisolasi di <code>app/Domain/</code></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Livewire UI</div>
+          <div class="stat-value">30+ Views</div>
+          <div class="stat-sub">Storefront &amp; Native Admin Cockpit</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Concurrency Lock</div>
+          <div class="stat-value">15m TTL</div>
+          <div class="stat-sub"><code>lockForUpdate()</code> Anti-Oversell</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Payment &amp; Courier</div>
+          <div class="stat-value">3 + 2</div>
+          <div class="stat-sub">Xendit, Midtrans, Stripe &amp; JNE, J&amp;T</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="section-head">
+        <div class="section-tag">01 // DIAGRAM ARCHIFY INTERAKTIF</div>
+        <h2>Arsitektur Global, Backend &amp; Frontend</h2>
+        <p>Tiga diagram arsitektur interaktif dibangun dengan Archify (mendukung zoom, focus view, dan mode gelap/terang).</p>
+      </div>
+      <div class="grid-3" style="margin-bottom: 1.5rem;">
+        <div class="card">
+          <div class="card-code">ARCHIFY // GLOBAL</div>
+          <h3>System Architecture</h3>
+          <p>Alur browser ke Laravel 12, 12 modul domain, PostgreSQL 16, Redis/Database queue, Typesense, dan cron scheduler.</p>
+          <div style="margin-top: 0.9rem;">
+            <a href="./architecture/nusora-architecture.html" class="btn btn-primary">Buka Diagram Global</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-code">ARCHIFY // BACKEND</div>
+          <h3>Backend Domain Architecture</h3>
+          <p>Middleware akses, <code>demo_admin</code> read-only guard, modul Catalog/Inventory/Order/RMA, gateway pembayaran, dan queue.</p>
+          <div style="margin-top: 0.9rem;">
+            <a href="./backend/backend-architecture.html" class="btn btn-primary">Buka Diagram Backend</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-code">ARCHIFY // FRONTEND</div>
+          <h3>Frontend &amp; Admin UI Architecture</h3>
+          <p>Vite 7 + Tailwind v4, Storefront <code>wire:navigate</code>, Alpine.js, Admin Cockpit native Livewire 4, Print A4, dan CsvExport.</p>
+          <div style="margin-top: 0.9rem;">
+            <a href="./frontend/frontend-architecture.html" class="btn btn-primary">Buka Diagram Frontend</a>
+          </div>
+        </div>
+      </div>
+      <div class="arch-box">
+        <div class="mermaid">
+graph TB
+    subgraph Client ["Client Layer (Browser)"]
+        SF["Storefront Publik (Livewire 4 + Alpine.js)"]
+        ADM["Admin Cockpit (Native Livewire 4, No Filament)"]
+        PRINT["Print Engine (Faktur A4, Thermal A6, Packing Slip A4)"]
+    end
+
+    subgraph Guard ["Security & Showcase Layer"]
+        MW["Middleware (EnsureAdminAccess, SecurityHeaders, RateLimiter)"]
+        DEMO["Showcase Guard (demo_admin Read-Only + demo_mode + allow_registration)"]
+    end
+
+    subgraph Domain ["12 Domain Modules (app/Domain/)"]
+        CAT["Catalog (JSONB + Variant Matrix)"]
+        INV["Inventory (15m TTL + Opname + Ledger)"]
+        ORD["Order (State Machine + Locked Adjustments)"]
+        PAY["Payment (Xendit/Midtrans/Stripe + Reconciler)"]
+        SHIP["Shipping (JNE/J&amp;T + Barcode + Tracking)"]
+        RMA["Returns &amp; 7-Day Size Exchange RMA"]
+    end
+
+    subgraph Infra ["Storage & Search"]
+        PG[("PostgreSQL 16+ (JSONB + GIN Index)")]
+        QUEUE[("Redis / Database Cache &amp; Queue")]
+        TS["Typesense 26+ (Eloquent Fallback)"]
+    end
+
+    SF --> MW
+    ADM --> MW
+    PRINT --> MW
+    MW --> DEMO
+    DEMO --> Domain
+    Domain --> PG
+    Domain --> QUEUE
+    Domain --> TS
+        </div>
+      </div>
+    </section>
+
+    <section id="invariants">
+      <div class="section-head">
+        <div class="section-tag">02 // CORE INVARIANTS</div>
+        <h2>Aturan &amp; Batasan Sistem</h2>
+        <p>Invarian berikut ditegakkan pada lapisan domain, Livewire, dan database.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-code">INV-01 // CONCURRENCY</div>
+          <h3>Pessimistic Inventory Lock</h3>
+          <p>Seluruh reservasi stok checkout (TTL 15 menit) dan mutasi opname berjalan di dalam <code>DB::transaction()</code> dengan <code>lockForUpdate()</code>.</p>
+        </div>
+        <div class="card">
+          <div class="card-code">INV-02 // FINANCIAL PRECISION</div>
+          <h3>Integer-Cents Money VO</h3>
+          <p>Semua nominal harga, pajak, diskon, dan ongkir disimpan sebagai <code>BIGINT</code> satuan terkecil dan diformat melalui Value Object <code>Money</code>.</p>
+        </div>
+        <div class="card">
+          <div class="card-code">INV-03 // AUDIT INTEGRITY</div>
+          <h3>Immutable Order Adjustments</h3>
+          <p>Hook Eloquent <code>booted()</code> pada <code>OrderAdjustment</code> memblokir perubahan atau penghapusan pajak/diskon setelah <code>is_locked = true</code>.</p>
+        </div>
+        <div class="card">
+          <div class="card-code">INV-04 // IDEMPOTENCY</div>
+          <h3>Signed Payment Webhooks</h3>
+          <p>Webhook Xendit, Midtrans, dan Stripe memvalidasi signature kriptografis serta <code>idempotency_key</code>, plus deteksi overpayment &amp; late payment.</p>
+        </div>
+        <div class="card">
+          <div class="card-code">INV-05 // DEMO SHOWCASE GUARD</div>
+          <h3>3-Layer Read-Only Demo Admin</h3>
+          <p>Akun <code>demo_admin</code> dilindungi di layer UI, hook <code>Livewire::listen('call')</code>, dan Eloquent write-blocker sehingga nol mutasi DB bisa terjadi.</p>
+        </div>
+        <div class="card">
+          <div class="card-code">INV-06 // EXPORTS &amp; PRINT</div>
+          <h3>A4 Invoice &amp; UTF-8 BOM CSV</h3>
+          <p>Faktur penjualan A4 (<code>@media print</code>), label thermal A6, dan ekspor CSV via <code>CsvExport</code> dengan UTF-8 BOM serta sanitasi CWE-1236.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="modules">
+      <div class="section-head">
+        <div class="section-tag">03 // DOMAIN MODULES</div>
+        <h2>11 Modul Spesifikasi &amp; Fitur Utama</h2>
+        <p>Klik modul pada bagian SDD &amp; ERD di bawah untuk melihat diagram relasional, use case, activity, dan sequence-nya.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-code">MOD-01</div><h3>Catalog &amp; Variant Matrix</h3><p>Atribut dinamis JSONB + GIN index, generator matriks warna x ukuran, serta sinkronisasi foto warna pada PDP.</p></div>
+        <div class="card"><div class="card-code">MOD-02</div><h3>Inventory, TTL &amp; Stock Opname</h3><p>Kunci reservasi 15 menit, pembersihan scheduler tiap menit, peringatan stok menipis, opname fisik, dan ledger mutasi.</p></div>
+        <div class="card"><div class="card-code">MOD-03</div><h3>Cart &amp; 3-Column Checkout</h3><p>Keranjang persisten tamu/member dengan auto-merge saat login serta dukungan penghentian transaksi di Checkout pada Mode Demo.</p></div>
+        <div class="card"><div class="card-code">MOD-04</div><h3>Orders &amp; State Machine</h3><p>Transisi status terproteksi, snapshot item historis, penyesuaian terkunci, dan faktur penjualan A4 siap cetak PDF.</p></div>
+        <div class="card"><div class="card-code">MOD-05</div><h3>Payments &amp; Reconciliation</h3><p>Gateway Xendit, Midtrans, dan Stripe, reconciler otomatis 5 menitan, serta antrean resolusi overpayment/refund manual.</p></div>
+        <div class="card"><div class="card-code">MOD-06</div><h3>Shipping &amp; Fulfillment Desk</h3><p>Kalkulasi ongkir JNE &amp; J&amp;T, webhook checkpoint transit, barcode Code 39 SVG, label thermal A6, dan packing slip A4.</p></div>
+        <div class="card"><div class="card-code">MOD-07</div><h3>Pricing, PPN 11% &amp; Promotions</h3><p>Evaluasi kupon berbasis aturan belanja minimum, batas kuota per user, dan kalkulasi PPN 11% berbasis integer cents.</p></div>
+        <div class="card"><div class="card-code">MOD-08</div><h3>After-Sales Returns &amp; RMA</h3><p>Garansi tukar ukuran 7 hari, proteksi cross-product variant injection, inspeksi QC gudang, dan pembuatan resi pengganti.</p></div>
+        <div class="card"><div class="card-code">MOD-09</div><h3>Reviews &amp; Customer Portal</h3><p>Ulasan terverifikasi dengan foto &amp; fit gauge, buku alamat, wishlist, pemulihan sandi, dan kontrol tutup/buka pendaftaran.</p></div>
+        <div class="card"><div class="card-code">MOD-10</div><h3>Admin Cockpit &amp; RBAC</h3><p>17 komponen Livewire 4 native tanpa Filament, Spatie RBAC, AuditLog, dan akun showcase <code>demo_admin</code> read-only.</p></div>
+        <div class="card"><div class="card-code">MOD-11</div><h3>Telemetry, Search &amp; SEO</h3><p>Health probe VPS (<code>/api/v1/health</code>), pencarian Typesense dengan fallback PostgreSQL, sitemap XML dinamis, dan JSON-LD.</p></div>
+      </div>
+    </section>
+
+    <section id="sdd-erd">
+      <div class="section-head">
+        <div class="section-tag">04 // SDD &amp; ERD VIEWER</div>
+        <h2>Diagram Per Modul</h2>
+        <p>Pilih modul untuk melihat ERD, Use Case, Activity Flow, Sequence Trace, atau definisi Mermaid.</p>
+      </div>
+
+      <div class="sdd-shell">
+        <div class="sdd-module-nav" id="sddModuleNav"></div>
+
+        <div class="sdd-toolbar">
+          <div>
+            <div id="sddActiveTitle" style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.05rem;">MOD-01 Catalog</div>
+            <div id="sddActiveDesc" style="font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--text-muted);">./docs/sdd/01_catalog_variants_sdd.md</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
+            <div class="sdd-tab-group" id="sddTabGroup">
+              <button type="button" class="sdd-tab-btn active" data-tab="erd" onclick="switchSddTab('erd')">ERD</button>
+              <button type="button" class="sdd-tab-btn" data-tab="useCase" onclick="switchSddTab('useCase')">Use Case</button>
+              <button type="button" class="sdd-tab-btn" data-tab="activity" onclick="switchSddTab('activity')">Activity</button>
+              <button type="button" class="sdd-tab-btn" data-tab="sequence" onclick="switchSddTab('sequence')">Sequence</button>
+              <button type="button" class="sdd-tab-btn" data-tab="source" onclick="switchSddTab('source')">Mermaid</button>
+            </div>
+            <a id="sddDocLink" href="./sdd/01_catalog_variants_sdd.md" class="btn btn-outline" style="padding: 0.38rem 0.75rem;">Buka SDD</a>
+          </div>
+        </div>
+
+        <div class="sdd-diagram-viewport" id="sddViewport">
+          Memuat diagram...
+        </div>
+      </div>
+    </section>
+
+    <section id="deployment">
+      <div class="section-head">
+        <div class="section-tag">05 // QUICK START &amp; SHARED HOSTING SHOWCASE</div>
+        <h2>Instalasi Lokal &amp; Mode Showcase</h2>
+        <p>Siap dijalankan di Docker/PostgreSQL lokal maupun Shared Hosting (cPanel/Plesk) menggunakan driver database/sync.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-code">LOCAL DEVELOPMENT</div>
+          <h3>Setup Cepat</h3>
+          <pre class="code-block" style="margin-top: 0.75rem;">composer install
+npm ci &amp;&amp; npm run build
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan db:seed --class=ProductSeeder
+php artisan storage:link</pre>
+        </div>
+        <div class="card">
+          <div class="card-code">SHOWCASE &amp; DEMO CREDENTIALS</div>
+          <h3>Akses Showcase &amp; Kontrol Admin</h3>
+          <ul>
+            <li><strong>Admin Read-Only Showcase</strong>: <code>demo@nusora.test</code> / <code>password</code> (role <code>demo_admin</code>).</li>
+            <li><strong>Mode Demo Checkout</strong>: Aktifkan di <em>Pengaturan Usaha</em> agar banner showcase tampil dan checkout berhenti sebelum pembuatan pesanan.</li>
+            <li><strong>Tutup Pendaftaran Publik</strong>: Gunakan tombol <em>Nonaktifkan Pendaftaran User</em> di <em>Pengaturan Usaha</em>.</li>
+            <li><strong>Panduan Lengkap</strong>: Lihat <a href="../DEPLOYMENT_SHARED_HOSTING.md" style="color: #2dd4bf;">DEPLOYMENT_SHARED_HOSTING.md</a>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      NusoraCommerce Technical Showcase &bull; Laravel 12 · Livewire 4 · Tailwind CSS v4 · PostgreSQL 16+ &bull; MIT License
+    </div>
+  </footer>
+
+  <script src="assets/js/sdd-data.js"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#080a0f',
+        primaryColor: '#0d9488',
+        primaryTextColor: '#f6f1e7',
+        primaryBorderColor: '#2dd4bf',
+        lineColor: '#38bdf8',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#09090b'
+      }
+    });
+
+    window.mermaid = mermaid;
+
+    let currentModuleIndex = 0;
+    let currentDiagramTab = 'erd';
+    let renderCounter = 0;
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function initSddViewer() {
+      const nav = document.getElementById('sddModuleNav');
+      if (!nav || !window.NUSORA_SDD_MODULES) return;
+
+      nav.innerHTML = '';
+      window.NUSORA_SDD_MODULES.forEach((mod, idx) => {
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = 'sdd-module-pill' + (idx === 0 ? ' active' : '');
+        pill.innerHTML = `<span>${mod.code}</span> <span>${mod.title}</span>`;
+        pill.onclick = () => selectSddModule(idx);
+        nav.appendChild(pill);
+      });
+
+      renderCurrentDiagram();
+    }
+
+    function selectSddModule(idx) {
+      currentModuleIndex = idx;
+      document.querySelectorAll('.sdd-module-pill').forEach((p, i) => {
+        p.classList.toggle('active', i === idx);
+      });
+      renderCurrentDiagram();
+    }
+
+    window.switchSddTab = function(tab) {
+      currentDiagramTab = tab;
+      document.querySelectorAll('#sddTabGroup .sdd-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+      });
+      renderCurrentDiagram();
+    };
+
+    async function renderCurrentDiagram() {
+      if (!window.NUSORA_SDD_MODULES || !window.NUSORA_SDD_MODULES[currentModuleIndex]) return;
+      const mod = window.NUSORA_SDD_MODULES[currentModuleIndex];
+
+      document.getElementById('sddActiveTitle').textContent = `${mod.code} ${mod.title}`;
+      document.getElementById('sddActiveDesc').textContent = `Software Design Document: ./docs/sdd/${mod.file}`;
+      document.getElementById('sddDocLink').href = `./sdd/${mod.file}`;
+
+      const viewport = document.getElementById('sddViewport');
+      const diagramCode = mod[currentDiagramTab] || '';
+
+      if (currentDiagramTab === 'source') {
+        viewport.innerHTML = `<pre class="sdd-source-view"><code>${escapeHtml(mod.erd || '')}</code></pre>`;
+        return;
+      }
+
+      if (!diagramCode) {
+        viewport.innerHTML = `<div style="color: var(--text-dim);">Diagram tidak tersedia untuk tab ini.</div>`;
+        return;
+      }
+
+      renderCounter++;
+      try {
+        const { svg } = await window.mermaid.render('mermaid-render-' + renderCounter, diagramCode);
+        viewport.innerHTML = svg;
+      } catch (err) {
+        viewport.innerHTML = `<pre class="sdd-source-view"><code>${escapeHtml(diagramCode)}</code></pre>`;
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSddViewer);
+    } else {
+      initSddViewer();
+    }
+  </script>
+</body>
+</html>

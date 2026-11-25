@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "NusoraCommerce — Global System Architecture",
+    "output": "nusora-architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1260, 520]
+  },
+  "components": [
+    { "id": "browser", "type": "external", "label": "Browser Client", "sublabel": "Storefront & Admin UI", "pos": [40, 220], "size": [145, 60] },
+    { "id": "web_server", "type": "security", "label": "Nginx / Apache", "sublabel": "HTTPS & Static Assets", "pos": [240, 220], "size": [145, 60], "tag": "Gateway" },
+    { "id": "laravel_app", "type": "backend", "label": "Laravel 12 Monolith", "sublabel": "Routes, Middleware & Guards", "pos": [445, 220], "size": [155, 60], "tag": "PHP 8.2+" },
+    { "id": "livewire_ui", "type": "frontend", "label": "Livewire 4 + Alpine", "sublabel": "Storefront & Admin Cockpit", "pos": [445, 95], "size": [155, 60], "tag": "No Filament" },
+    { "id": "domain_core", "type": "backend", "label": "12 Domain Modules", "sublabel": "Actions, VO & State Machine", "pos": [665, 220], "size": [160, 60], "tag": "app/Domain" },
+    { "id": "webhooks", "type": "security", "label": "Signed Webhooks", "sublabel": "Xendit, Midtrans, JNE & J&T", "pos": [665, 95], "size": [160, 60], "tag": "Idempotent" },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL 16", "sublabel": "JSONB + GIN & Row Locks", "pos": [915, 130], "size": [150, 60], "brand": "postgresql" },
+    { "id": "cache_queue", "type": "database", "label": "Redis / Database", "sublabel": "Cache, Session & Queue", "pos": [915, 250], "size": [150, 60], "brand": "redis" },
+    { "id": "typesense", "type": "cloud", "label": "Typesense 26", "sublabel": "Search + Eloquent Fallback", "pos": [915, 370], "size": [150, 60], "tag": "Optional" },
+    { "id": "scheduler", "type": "messagebus", "label": "Cron Scheduler", "sublabel": "TTL Cleanup & Reconciler", "pos": [665, 370], "size": [160, 60], "tag": "Every Minute" }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Single-Instance Modular Monolith",
+      "wraps": ["laravel_app", "livewire_ui", "domain_core", "webhooks", "scheduler"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Data Persistence & Search",
+      "wraps": ["postgres", "cache_queue", "typesense"]
+    }
+  ],
+  "connections": [
+    { "id": "c1", "from": "browser", "to": "web_server", "label": "HTTPS :443", "variant": "emphasis" },
+    { "id": "c2", "from": "web_server", "to": "laravel_app", "label": "PHP-FPM" },
+    { "id": "c3", "from": "laravel_app", "to": "livewire_ui", "label": "wire:navigate", "fromSide": "top", "toSide": "bottom" },
+    { "id": "c4", "from": "laravel_app", "to": "domain_core", "label": "Fat Actions" },
+    { "id": "c5", "from": "webhooks", "to": "domain_core", "label": "HMAC / Token", "variant": "security", "fromSide": "bottom", "toSide": "top", "labelAt": [745, 185] },
+    { "id": "c6", "from": "domain_core", "to": "postgres", "label": "lockForUpdate", "fromSide": "right", "toSide": "left" },
+    { "id": "c7", "from": "domain_core", "to": "cache_queue", "label": "Atomic Locks", "fromSide": "right", "toSide": "left" },
+    { "id": "c8", "from": "domain_core", "to": "typesense", "label": "HTTP Search", "variant": "dashed", "fromSide": "right", "toSide": "left" },
+    { "id": "c9", "from": "scheduler", "to": "domain_core", "label": "Cleanup & Sync", "variant": "dashed", "fromSide": "top", "toSide": "bottom" }
+  ]
+}

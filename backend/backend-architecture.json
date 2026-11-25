@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "NusoraCommerce — Backend Domain Architecture",
+    "output": "backend-architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1260, 520]
+  },
+  "components": [
+    { "id": "http_entry", "type": "external", "label": "HTTP & Livewire", "sublabel": "Controllers & Components", "pos": [40, 235], "size": [150, 60] },
+    { "id": "sec_mw", "type": "security", "label": "Access & Demo Guard", "sublabel": "RBAC, RateLimit & ReadOnly", "pos": [250, 235], "size": [155, 60], "tag": "Middleware" },
+    { "id": "mod_cat", "type": "backend", "label": "Catalog & Pricing", "sublabel": "JSONB, Variants & Money VO", "pos": [480, 75], "size": [165, 55] },
+    { "id": "mod_inv", "type": "backend", "label": "Inventory Engine", "sublabel": "15m TTL, Opname & Ledger", "pos": [480, 165], "size": [165, 55] },
+    { "id": "mod_ord", "type": "backend", "label": "Order & Adjustments", "sublabel": "State Machine & PPN 11%", "pos": [480, 255], "size": [165, 55] },
+    { "id": "mod_rma", "type": "backend", "label": "Shipping & RMA", "sublabel": "JNE/J&T & 7-Day Exchange", "pos": [480, 345], "size": [165, 55] },
+    { "id": "pay_gw", "type": "security", "label": "Payment Gateways", "sublabel": "Xendit, Midtrans & Stripe", "pos": [985, 95], "size": [150, 60], "tag": "Idempotent" },
+    { "id": "eloquent", "type": "backend", "label": "Eloquent & Transactions", "sublabel": "DB::transaction + Events", "pos": [735, 225], "size": [160, 60] },
+    { "id": "jobs", "type": "messagebus", "label": "Queue & Mailables", "sublabel": "Order & RMA Notifications", "pos": [735, 355], "size": [160, 60] },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL 16", "sublabel": "Primary Relational Store", "pos": [985, 225], "size": [150, 60], "brand": "postgresql" },
+    { "id": "cache", "type": "database", "label": "Redis / DB Store", "sublabel": "Locks, Tags & Sessions", "pos": [985, 355], "size": [150, 60], "brand": "redis" }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Modular Monolith Domain Layer (app/Domain)",
+      "wraps": ["mod_cat", "mod_inv", "mod_ord", "mod_rma", "eloquent", "jobs"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Persistence & Cache",
+      "wraps": ["postgres", "cache"]
+    }
+  ],
+  "connections": [
+    { "id": "b1", "from": "http_entry", "to": "sec_mw", "label": "Request", "variant": "emphasis" },
+    { "id": "b2", "from": "sec_mw", "to": "mod_cat", "fromSide": "right", "toSide": "left" },
+    { "id": "b3", "from": "sec_mw", "to": "mod_inv", "fromSide": "right", "toSide": "left" },
+    { "id": "b4", "from": "sec_mw", "to": "mod_ord", "fromSide": "right", "toSide": "left" },
+    { "id": "b5", "from": "sec_mw", "to": "mod_rma", "fromSide": "right", "toSide": "left" },
+    { "id": "b6", "from": "eloquent", "to": "pay_gw", "label": "Webhook", "variant": "security", "fromSide": "top", "toSide": "left" },
+    { "id": "b7", "from": "mod_cat", "to": "eloquent", "fromSide": "right", "toSide": "left" },
+    { "id": "b8", "from": "mod_inv", "to": "eloquent", "fromSide": "right", "toSide": "left" },
+    { "id": "b9", "from": "mod_ord", "to": "eloquent", "fromSide": "right", "toSide": "left" },
+    { "id": "b10", "from": "mod_rma", "to": "eloquent", "fromSide": "right", "toSide": "left" },
+    { "id": "b11", "from": "eloquent", "to": "postgres", "label": "SQL + Locks", "fromSide": "right", "toSide": "left" },
+    { "id": "b12", "from": "eloquent", "to": "jobs", "label": "Dispatch Event", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelAt": [815, 318] },
+    { "id": "b13", "from": "jobs", "to": "cache", "label": "Queue Driver", "variant": "dashed", "fromSide": "right", "toSide": "left" }
+  ]
+}
